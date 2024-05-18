@@ -3,6 +3,9 @@
 
 Enhanced Task Organizer is a web application designed to efficiently manage tasks. The application allows users to add, edit, delete, and filter tasks based on their priority, and to drag and drop tasks between different states (pending, in-progress, and completed).
 
+![Screenshot 2024-05-18 191825](https://github.com/eriktaveras/Task-Organizer/assets/10116703/b2a38f6b-3d3f-4c55-989e-53c9792e3fba)
+
+
 ## Features
 
 - **Intuitive User Interface**: The application uses Tailwind CSS for a clean and modern interface.
