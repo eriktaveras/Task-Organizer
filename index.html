@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Task Organizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.lineicons.com/3.0/lineicons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .draggable {
+            cursor: grab;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .draggable:hover {
+            transform: scale(1.05);
+        }
+
+        .dropzone.active {
+            border-color: #F88379;
+            background-color: #f7f7f7;
+        }
+
+        .dropzone.pending {
+            background-color: #e0f7fa;
+        }
+
+        .dropzone.in-progress {
+            background-color: #fffbe0;
+        }
+
+        .dropzone.completed {
+            background-color: #e8f5e9;
+        }
+
+        .task {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #008080;
+            color: white;
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .task:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .task button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: white;
+            transition: color 0.2s;
+        }
+
+        .task button:hover {
+            color: #ff6961;
+        }
+
+        .priority {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            background-color: #ffffff33;
+        }
+
+        .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .tag {
+            background-color: #008080;
+            color: white;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            margin: 2px 0;
+        }
+
+        .form-container {
+            background-color: var(--antiflash-white);
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-select, .form-date, .form-tags {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        .form-button {
+            background-color: var(--turquoise);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        .form-button:hover {
+            background-color: var(--byzantine-blue);
+        }
+
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .form-col {
+            flex: 1;
+            min-width: 200px;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex flex-col items-center min-h-screen">
+
+    <div class="container mx-auto p-6">
+        <h1 class="text-5xl font-bold text-teal-700 my-6 text-center">Task Organizer</h1>
+        <h3 class="text-2xl text-gray-600 mb-8 text-center">Manage your tasks efficiently</h3>
+
+        <div class="form-container w-full max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg">
+            <form id="task-form" class="space-y-6">
+                <div>
+                    <label for="task-name" class="block text-md font-medium text-gray-700">Task Name</label>
+                    <input type="text" id="task-name" placeholder="New Task" class="mt-1 block w-full py-2 px-4 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-md" required>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div>
+                        <label for="task-priority" class="block text-md font-medium text-gray-700">Priority (optional)</label>
+                        <select id="task-priority" class="mt-1 block w-full py-2 px-4 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-md">
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="task-date" class="block text-md font-medium text-gray-700">Due Date (optional)</label>
+                        <input type="date" id="task-date" class="mt-1 block w-full py-2 px-4 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-md">
+                    </div>
+                    <div>
+                        <label for="task-tags" class="block text-md font-medium text-gray-700">Tags (optional)</label>
+                        <input type="text" id="task-tags" placeholder="Tags (separated by commas)" class="mt-1 block w-full py-2 px-4 border border-gray-300 bg-gray-50 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-md">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 px-6 border border-transparent rounded-md shadow-sm text-md font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">Add Task</button>
+            </form>
+        </div>
+
+        <fieldset class="flex flex-col gap-6 my-4">
+
+            <div class="flex gap-4 justify-center">
+                <button id="filter-all" class="filter-button bg-teal-200 hover:bg-teal-300 text-teal-700 font-medium py-2 px-6 rounded transition duration-200">
+                    <i class="fas fa-tasks mr-2"></i> All
+                </button>
+                <button id="filter-high" class="filter-button bg-red-200 hover:bg-red-300 text-red-700 font-medium py-2 px-6 rounded transition duration-200">
+                    <i class="fas fa-exclamation-circle mr-2"></i> High
+                </button>
+                <button id="filter-medium" class="filter-button bg-yellow-200 hover:bg-yellow-300 text-yellow-700 font-medium py-2 px-6 rounded transition duration-200">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Medium
+                </button>
+                <button id="filter-low" class="filter-button bg-green-200 hover:bg-green-300 text-green-700 font-medium py-2 px-6 rounded transition duration-200">
+                    <i class="fas fa-exclamation mr-2"></i> Low
+                </button>
+            </div>
+        </fieldset>
+
+        <div class="dropzone-container flex flex-col sm:flex-row justify-around w-full max-w-4xl mx-auto gap-6 my-12">
+            <div id="pending" class="dropzone pending border-2 border-dashed border-blue-400 bg-blue-50 w-full h-80 p-6 shadow-lg rounded-lg flex flex-col items-center transition duration-300 hover:shadow-xl">
+                <h2 class="text-2xl font-semibold text-blue-700 mb-4">Pending <i class="lni lni-hourglass text-blue-700 text-xl"></i> (<span id="count-pending">0</span>)</h2>
+            </div>
+            <div id="in-progress" class="dropzone in-progress border-2 border-dashed border-yellow-400 bg-yellow-50 w-full h-80 p-6 shadow-lg rounded-lg flex flex-col items-center transition duration-300 hover:shadow-xl">
+                <h2 class="text-2xl font-semibold text-yellow-800 mb-4">In Progress <i class="lni lni-spinner text-yellow-800 text-xl"></i> (<span id="count-in-progress">0</span>)</h2>
+            </div>
+            <div id="completed" class="dropzone completed border-2 border-dashed border-green-400 bg-green-50 w-full h-80 p-6 shadow-lg rounded-lg flex flex-col items-center transition duration-300 hover:shadow-xl">
+                <h2 class="text-2xl font-semibold text-green-800 mb-4">Completed <i class="lni lni-checkmark-circle text-green-800 text-xl"></i> (<span id="count-completed">0</span>)</h2>
+            </div>
+        </div>
+    </div>
+
+    <div id="tasks" class="tasks-container w-full max-w-4xl mt-8 mx-auto"></div>
+    <button id="reset" class="bg-navy-500 text-white py-2 px-4 rounded hover:bg-navy-700 transition-colors mt-8">Reset</button>
+
+    <script>
+        const dropzones = document.querySelectorAll('.dropzone');
+        const resetButton = document.getElementById('reset');
+        const tasksContainer = document.getElementById('tasks');
+        const taskForm = document.getElementById('task-form');
+        const taskNameInput = document.getElementById('task-name');
+        const taskPriorityInput = document.getElementById('task-priority');
+        const taskDateInput = document.getElementById('task-date');
+        const taskTagsInput = document.getElementById('task-tags');
+        const taskCounters = {
+            pending: document.getElementById('count-pending'),
+            'in-progress': document.getElementById('count-in-progress'),
+            completed: document.getElementById('count-completed')
+        };
+
+        const filterButtons = {
+            all: document.getElementById('filter-all'),
+            high: document.getElementById('filter-high'),
+            medium: document.getElementById('filter-medium'),
+            low: document.getElementById('filter-low')
+        };
+
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        function updateTaskCounters() {
+            taskCounters.pending.textContent = document.querySelectorAll('#pending .task').length;
+            taskCounters['in-progress'].textContent = document.querySelectorAll('#in-progress .task').length;
+            taskCounters.completed.textContent = document.querySelectorAll('#completed .task').length;
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function createTaskElement(task) {
+            const newTask = document.createElement('div');
+            newTask.id = task.id;
+            newTask.className = 'task draggable';
+            newTask.draggable = true;
+            newTask.dataset.status = task.status;
+            newTask.dataset.priority = task.priority;
+            newTask.dataset.tags = task.tags;
+            newTask.dataset.date = task.date;
+            newTask.innerHTML = `
+                <span>${task.name}</span>
+                <div>
+                    <button class="edit-button"><i class="lni lni-pencil"></i></button>
+                    <button class="delete-button"><i class="lni lni-trash-can"></i></button>
+                </div>
+                <div class="tags">${task.tags.map(tag => `<span class="tag">${tag.trim()}</span>`).join('')}</div>
+                <div class="date">${task.date ? new Date(task.date).toLocaleDateString() : ''}</div>
+            `;
+
+            // Adding priority label
+            const priorityLabel = document.createElement('div');
+            priorityLabel.className = `priority priority-${task.priority}`;
+            priorityLabel.textContent = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
+            newTask.prepend(priorityLabel);
+
+            // Adding event listeners
+            newTask.querySelector('.delete-button').addEventListener('click', () => deleteTask(task.id, newTask));
+            newTask.querySelector('.edit-button').addEventListener('click', () => editTask(task, newTask));
+            newTask.addEventListener('dragstart', (event) => event.dataTransfer.setData('text/plain', event.target.id));
+
+            return newTask;
+        }
+
+        function deleteTask(taskId, taskElement) {
+            tasks = tasks.filter(t => t.id !== taskId);
+            saveTasks();
+            taskElement.remove();
+            updateTaskCounters();
+        }
+
+        function editTask(task, taskElement) {
+            const newName = prompt('Edit task:', task.name);
+            const newTags = prompt('Edit tags (separated by commas):', task.tags.join(', '));
+            const newDate = prompt('Edit due date:', task.date ? new Date(task.date).toISOString().split('T')[0] : '');
+            if (newName) {
+                task.name = newName;
+                task.tags = newTags ? newTags.split(',') : [];
+                task.date = newDate || null;
+                taskElement.querySelector('span').textContent = newName;
+                taskElement.querySelector('.tags').innerHTML = task.tags.map(tag => `<span class="tag">${tag.trim()}</span>`).join('');
+                taskElement.querySelector('.date').textContent = task.date ? new Date(task.date).toLocaleDateString() : '';
+                saveTasks();
+            }
+        }
+
+        function loadTasks() {
+            tasks.forEach(task => {
+                const taskElement = createTaskElement(task);
+                document.getElementById(task.status).appendChild(taskElement);
+            });
+            updateTaskCounters();
+        }
+
+        dropzones.forEach(dropzone => {
+            dropzone.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                dropzone.classList.add('active');
+            });
+
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.classList.remove('active');
+            });
+
+            dropzone.addEventListener('drop', (event) => {
+                event.preventDefault();
+                const id = event.dataTransfer.getData('text');
+                const draggableElement = document.getElementById(id);
+                dropzone.appendChild(draggableElement);
+                dropzone.classList.remove('active');
+
+                const task = tasks.find(t => t.id === id);
+                task.status = dropzone.id;
+                saveTasks();
+                updateTaskCounters();
+            });
+        });
+
+        resetButton.addEventListener('click', () => {
+            tasksContainer.innerHTML = '';
+            tasks = [];
+            saveTasks();
+            updateTaskCounters();
+        });
+
+        taskForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const taskName = taskNameInput.value.trim();
+            const taskPriority = taskPriorityInput.value;
+            const taskDate = taskDateInput.value;
+            const taskTags = taskTagsInput.value.split(',').map(tag => tag.trim());
+            if (taskName !== "") {
+                const newTaskId = `task${Date.now()}`;
+                const newTask = {
+                    id: newTaskId,
+                    name: taskName,
+                    status: 'pending',
+                    priority: taskPriority,
+                    date: taskDate || null,
+                    tags: taskTags
+                };
+                tasks.push(newTask);
+                saveTasks();
+
+                const taskElement = createTaskElement(newTask);
+                document.getElementById('pending').appendChild(taskElement);
+
+                taskNameInput.value = "";
+                taskDateInput.value = "";
+                taskTagsInput.value = "";
+                updateTaskCounters();
+            }
+        });
+
+        function filterTasks(priority) {
+            const allTasks = document.querySelectorAll('.task');
+            allTasks.forEach(task => {
+                task.style.display = priority === 'all' || task.dataset.priority === priority ? 'flex' : 'none';
+            });
+
+            Object.keys(filterButtons).forEach(key => {
+                filterButtons[key].classList.remove('active-filter');
+            });
+            filterButtons[priority].classList.add('active-filter');
+        }
+
+        filterButtons.all.addEventListener('click', () => filterTasks('all'));
+        filterButtons.high.addEventListener('click', () => filterTasks('high'));
+        filterButtons.medium.addEventListener('click', () => filterTasks('medium'));
+        filterButtons.low.addEventListener('click', () => filterTasks('low'));
+
+        loadTasks();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lit/dist/lit.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lit-html/dist/lit-html.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lit-element/dist/lit-element.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lit-html/directives/repeat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lit-html/directives/class-map.js"></script>
+</body>
+
+</html>
